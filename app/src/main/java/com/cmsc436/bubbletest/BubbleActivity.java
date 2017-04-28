@@ -103,7 +103,6 @@ public class BubbleActivity extends Activity implements Sheets.Host {
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_bubble);
 
-
         debugNarrator = (TextView) findViewById(R.id.debugNarrator);
         debugNarrator.setVisibility(View.INVISIBLE);
 
