@@ -62,7 +62,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     private String teamSpreadsheetId = "1jus0ktF2tQw2sOjsxVb4zoDeD1Zw90KAMFNTQdkFiJQ";
 
     // user id
-    private static final String USER_ID = "t04p06";
+    private static final String USER_ID = "t04p01";
 
     // indicates if test should write to central spreadsheet
     private static boolean WRITE_TO_CENTRAL = true;
@@ -102,7 +102,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         setContentView(R.layout.activity_bubble);
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_bubble);
-        rl.setBackgroundColor(Color.parseColor("#FF7800")); // orange background color
+
 
         debugNarrator = (TextView) findViewById(R.id.debugNarrator);
         debugNarrator.setVisibility(View.INVISIBLE);
@@ -112,6 +112,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         centralSheet = new Sheets(this,this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
         //centralSheet = new Sheets(this, getString(R.string.app_name), centralSpreadsheetId);
         teamSheet = new Sheets(this, this,getString(R.string.app_name), teamSpreadsheetId,teamSpreadsheetId);
+        showInstructions(rl);
 
         bubble = (Button) findViewById(R.id.bubble);
 
@@ -276,7 +277,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
                         + " seconds.\n"
                 //+ detailData
         );
-        resultScreen.setTextSize(25);
+        resultScreen.setTextSize(40);
         resultScreen.setVisibility(View.VISIBLE);
     }
 
@@ -399,6 +400,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         AlertDialog.Builder builder = new AlertDialog.Builder(BubbleActivity.this);
         builder.setTitle("Bubble Test Instructions");
         builder.setMessage("Try to hit as many bubbles as you can once the test starts" );
+
         builder.setPositiveButton("Okay",new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog,int id) {
                 // if this button is clicked, close
@@ -407,6 +409,8 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+        TextView textView = (TextView) alertDialog.findViewById(android.R.id.message);
+        textView.setTextSize(40);
     }
 
 
