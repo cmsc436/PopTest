@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import static com.cmsc436.bubbletest.TrialMode.getResultIntent;
+
 public class BubbleActivity extends Activity implements Sheets.Host {
 
     //int totalBubbles = 0;
@@ -65,7 +67,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     private static final String USER_ID = "t04p01";
 
     // indicates if test should write to central spreadsheet
-    private static boolean WRITE_TO_CENTRAL = true;
+    private static boolean WRITE_TO_CENTRAL = false;
 
     //private long secs,mins,hrs;
     //private String minutes,seconds;
@@ -118,6 +120,15 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         // the bubble should not be visible until the trial has started
         bubble.setVisibility(View.GONE);
 
+        //TODO: @Brian I had to start some of the intent handling
+
+        Intent i = getIntent();
+        //If its trial, set WRITE_TO_CENTRAL to true
+        //otherwise, it should remain false
+        if(i.hasExtra("Appendage")){
+            //the intent is the TRIAL, so we gotta send data to the main sheet
+            WRITE_TO_CENTRAL = true;
+        }
 
         startTrial = (Button) findViewById(R.id.startTrial);
         startTrial.setOnClickListener(new View.OnClickListener() {
@@ -144,7 +155,6 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     protected void onStop() {
         super.onStop();
         bubble.setVisibility(View.GONE);
-        //TODO: WRITE TO SHEETS
         if(!writtenToSheets){
             Log.i("Test","PARTIAL trial");
             WRITE_TO_CENTRAL = false;
@@ -264,8 +274,18 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         Log.i("result",""+result);
         teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
-        if (WRITE_TO_CENTRAL)
-            centralSheet.writeData(Sheets.TestType.LH_POP, USER_ID, (float) result);
+        if (WRITE_TO_CENTRAL) {
+            //Only write to central sheet if intent is TRIAL
+
+            Intent data = new Intent();
+
+            setResult(Activity.RESULT_OK,getResultIntent((float)result));
+
+            //centralSheet.writeData(Sheets.TestType.LH_POP, USER_ID, (float) result);
+        } else {
+            //this means the user either closed the program early, or they did PRACTICE
+            setResult(Activity.RESULT_CANCELED,getResultIntent((float)result));
+        }
 
         writtenToSheets = true;
 
@@ -278,6 +298,9 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         );
         resultScreen.setTextSize(40);
         resultScreen.setVisibility(View.VISIBLE);
+
+        //A button to let the user finish the activity
+        (findViewById(R.id.done_button)).setVisibility(View.VISIBLE);
     }
 
     public void initialLocation() {
@@ -412,7 +435,10 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         textView.setTextSize(40);
     }
 
-
+    //The user hit the done_button, so we can finish the activity and send data back to Front End
+    public void sendResultsToFrontEnd(View view) {
+        finish();
+    }
 
     private double standardDeviation(ArrayList<Double> arr, double average){
 
@@ -426,4 +452,6 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         }
         return Math.sqrt(stdDev);
     }
+
+
 }
