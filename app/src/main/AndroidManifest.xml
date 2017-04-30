@@ -26,6 +26,7 @@
                 <action android:name="edu.umd.cmsc436.pop.action.HELP"/>
                 <action android:name="edu.umd.cmsc436.pop.action.TRIAL"/>
                 <action android:name="edu.umd.cmsc436.pop.action.PRACTICE"/>
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
