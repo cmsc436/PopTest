@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import static com.cmsc436.bubbletest.TrialMode.getResultIntent;
-
 public class BubbleActivity extends Activity implements Sheets.Host {
 
     //int totalBubbles = 0;
@@ -254,6 +252,10 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         double result = 0.0;
         DecimalFormat precision = new DecimalFormat("0.00");
 
+        if(bubble.getVisibility() == View.VISIBLE){
+            bubble.setVisibility(View.GONE);
+        }
+
         if (poppedBubbles > 0) {
             double totalReactionTime = 0;
             for (int i = 0; i < lifespans.size(); i++) {
@@ -274,17 +276,21 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         Log.i("result",""+result);
         teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
+
+        Intent data = new Intent();
+        data.putExtra("float",result);
+
         if (WRITE_TO_CENTRAL) {
             //Only write to central sheet if intent is TRIAL
 
-            Intent data = new Intent();
 
-            setResult(Activity.RESULT_OK,getResultIntent((float)result));
+
+            setResult(Activity.RESULT_OK,data);
 
             //centralSheet.writeData(Sheets.TestType.LH_POP, USER_ID, (float) result);
         } else {
             //this means the user either closed the program early, or they did PRACTICE
-            setResult(Activity.RESULT_CANCELED,getResultIntent((float)result));
+            setResult(Activity.RESULT_CANCELED,data);
         }
 
         writtenToSheets = true;
