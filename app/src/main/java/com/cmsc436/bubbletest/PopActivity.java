@@ -21,6 +21,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static android.R.attr.src;
+
 public class PopActivity extends Activity implements Sheets.Host {
 
     //int totalBubbles = 0;
@@ -243,6 +245,8 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         // increment trialNum
         //totalBubbles++;
+        //Log.i("BubbleAct",totalBubbles + " bubbles popped");
+        
 
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
