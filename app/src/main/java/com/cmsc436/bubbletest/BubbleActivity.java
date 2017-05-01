@@ -227,7 +227,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         //totalBubbles++;
         //Log.i("BubbleAct",totalBubbles + " bubbles popped");
 
-        // TODO figure out a way to preserve acurracy by not having to cast these values to ints
+        
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
 
