@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="/Users/alexandraboukhvalova/AndroidStudioProjects/MS-BalloonTest/frontendhelper/src/main/assets"/><source path="/Users/alexandraboukhvalova/AndroidStudioProjects/MS-BalloonTest/frontendhelper/build/generated/assets/shaders/debug"/></dataSet><dataSet config="debug"><source path="/Users/alexandraboukhvalova/AndroidStudioProjects/MS-BalloonTest/frontendhelper/src/debug/assets"/></dataSet></merger>

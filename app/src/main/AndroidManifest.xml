@@ -14,6 +14,8 @@
         android:name=".PopActivity"
         android:exported="true" >
             <intent-filter>
+                
+                <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="edu.umd.cmsc436.pop.action.HELP"/>
                 <action android:name="edu.umd.cmsc436.pop.action.TRIAL"/>
                 <action android:name="edu.umd.cmsc436.pop.action.PRACTICE"/>
