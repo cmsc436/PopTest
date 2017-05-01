@@ -97,7 +97,7 @@ public class PopActivity extends Activity implements Sheets.Host {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bubble);
+        setContentView(R.layout.activity_pop);
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_bubble);
 
@@ -105,7 +105,6 @@ public class PopActivity extends Activity implements Sheets.Host {
         debugNarrator.setVisibility(View.INVISIBLE);
 
         // initialize sheet
-
         centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
         teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
         showInstructions(rl);
@@ -121,8 +120,6 @@ public class PopActivity extends Activity implements Sheets.Host {
         if (action == null) {
             //TODO: Determine what to do for null intent Action
         }
-
-        Log.d("ACTION", action);
 
         if (action.equals("edu.umd.cmsc436.pop.action.TRIAL")) {
             //the intent is the TRIAL, so we gotta send data to the main sheet
@@ -140,7 +137,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                         APPENDAGE = Sheets.TestType.LH_POP;
                         break;
                 }
-                Log.d("APPENDAGE", String.valueOf(APPENDAGE));
+
                 //TODO: Determine what to do for invalid appendage argument
             }
         } else if (action.equals("edu.umd.cmsc436.pop.action.PRACTICE")) {
@@ -177,7 +174,9 @@ public class PopActivity extends Activity implements Sheets.Host {
         super.onStop();
         bubble.setVisibility(View.GONE);
         if(!writtenToSheets){
+            /*
             Log.i("Test", "PARTIAL trial");
+            */
             WRITE_TO_CENTRAL = false;
             today = "PARTIAL TRIAL " + today;
             completeTrial();
@@ -232,10 +231,6 @@ public class PopActivity extends Activity implements Sheets.Host {
                     (y >= 0);
         }
 
-        //Log.i("BubbleAct",layoutWidth +", " + layoutHeight);
-        //Log.i("BubbleAct",x +", " + y);
-        //Log.i("BubbleAct",bubble.getWidth() +", " + bubble.getHeight()+"\n");
-
         scene.leftMargin = (int) x;
         scene.topMargin = (int) y;
 
@@ -248,9 +243,7 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         // increment trialNum
         //totalBubbles++;
-        //Log.i("BubbleAct",totalBubbles + " bubbles popped");
 
-        // TODO figure out a way to preserve accuracy by not having to cast these values to ints
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
 
@@ -281,28 +274,24 @@ public class PopActivity extends Activity implements Sheets.Host {
         if (poppedBubbles > 0) {
             double totalReactionTime = 0;
             for (int i = 0; i < lifespans.size(); i++) {
-                Log.i("Lifespan", "" + lifespans.get(i));
+                //Log.i("Lifespan", "" + lifespans.get(i));
                 totalReactionTime += lifespans.get(i);
                 //LH_POP WILL HAVE LIFESPANS
                 teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
             }
             result = totalReactionTime / poppedBubbles;
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
-            Log.i("stdDev", "" + stdDev);
             teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
 
         } else {
             result = 0.0;
         }
         //RH_POP FINAL RESULTS
-        Log.i("result", "" + result);
+        //Log.i("result", "" + result);
         teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
-
 
         Intent data = new Intent();
         data.putExtra("float", result);
-
-        Log.d("MODES", IN_PRACTICE_MODE + " + " + WRITE_TO_CENTRAL);
 
         if (WRITE_TO_CENTRAL) {
             //Only write to central sheet if intent is TRIAL
@@ -355,7 +344,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                 (y >= 0);
 
         while (!legalBubbleLocation) {
-            Log.i("BubbleAct", "illegalBubbleLocation");
+            //Log.i("BubbleAct", "illegalBubbleLocation");
             x = bubble.getWidth()
                     + new Random()
                     .nextInt(fullWidth - (5 * bubble.getWidth()));
@@ -441,7 +430,7 @@ public class PopActivity extends Activity implements Sheets.Host {
             System.out.println(e.getClass());
             throw new RuntimeException(e);
         }
-        Log.i(getClass().getSimpleName(), "Done");
+        //Log.i(getClass().getSimpleName(), "Done");
     }
 
     public void showInstructions(View view) {
