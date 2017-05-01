@@ -1,14 +1,12 @@
-package com.cmsc436.bubbletest;
+package com.cmsc436.pop;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.ButtonBarLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -16,15 +14,17 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.cmsc436.bubbletest.R;
+
+import edu.umd.cmsc436.frontendhelper.TrialMode;
 import edu.umd.cmsc436.sheets.Sheets;
 
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
-public class BubbleActivity extends Activity implements Sheets.Host {
+public class PopActivity extends Activity implements Sheets.Host {
 
     //int totalBubbles = 0;
     int poppedBubbles = 0;
@@ -32,7 +32,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     long timeOfDeath;
 
     // distance between old and new bubble to be tapped
-    final int BUBBLE_RADIUS = 500;
+    int BUBBLE_RADIUS = 500;
     final int CORRECTION_FACTOR = 300;
 
     // to store response times
@@ -62,7 +62,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     private String teamSpreadsheetId = "1jus0ktF2tQw2sOjsxVb4zoDeD1Zw90KAMFNTQdkFiJQ";
 
     // user id
-    private static final String USER_ID = "t04p01";
+    private static String USER_ID = "t04p02";
 
     // indicates if test should write to central spreadsheet
     private static boolean WRITE_TO_CENTRAL = false;
@@ -126,6 +126,21 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         if(i.hasExtra("Appendage")){
             //the intent is the TRIAL, so we gotta send data to the main sheet
             WRITE_TO_CENTRAL = true;
+
+            //get the patient ID for writing to the more detailed spread sheet
+            USER_ID = TrialMode.getPatientId(i);
+
+            //TODO set the balloon radius based on difficulty level
+            //set radius based on difficulty level
+            /*int difficultyLevel = TrialMode.getDifficulty(i);
+
+            if (difficultyLevel == 1) {
+                BUBBLE_RADIUS = 400;
+            } else if (difficultyLevel == 2) {
+                BUBBLE_RADIUS = 500;
+            } else {
+                BUBBLE_RADIUS = 600;
+            }*/
         }
 
         startTrial = (Button) findViewById(R.id.startTrial);
@@ -227,7 +242,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         //totalBubbles++;
         //Log.i("BubbleAct",totalBubbles + " bubbles popped");
 
-        
+
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
 
@@ -425,7 +440,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     }
 
     public void showInstructions(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(BubbleActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(PopActivity.this);
         builder.setTitle("Bubble Test Instructions");
         builder.setMessage("Try to hit as many bubbles as you can once the test starts" );
 
