@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.ButtonBarLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +19,11 @@ import edu.umd.cmsc436.sheets.Sheets;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
-public class BubbleActivity extends Activity implements Sheets.Host {
+import static android.R.attr.src;
+
+public class PopActivity extends Activity implements Sheets.Host {
 
     //int totalBubbles = 0;
     int poppedBubbles = 0;
@@ -61,11 +60,12 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     private String centralSpreadsheetId = "1YvI3CjS4ZlZQDYi5PaiA7WGGcoCsZfLoSFM0IdvdbDU";
     private String teamSpreadsheetId = "1jus0ktF2tQw2sOjsxVb4zoDeD1Zw90KAMFNTQdkFiJQ";
 
-    // user id
-    private static final String USER_ID = "t04p01";
+    private static String USER_ID;
+    private static Sheets.TestType APPENDAGE;
 
     // indicates if test should write to central spreadsheet
     private static boolean WRITE_TO_CENTRAL = false;
+    private static boolean IN_PRACTICE_MODE = false;
 
     //private long secs,mins,hrs;
     //private String minutes,seconds;
@@ -99,7 +99,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bubble);
+        setContentView(R.layout.activity_pop);
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.activity_bubble);
 
@@ -107,10 +107,8 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         debugNarrator.setVisibility(View.INVISIBLE);
 
         // initialize sheet
-
-        centralSheet = new Sheets(this,this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
-        //centralSheet = new Sheets(this, getString(R.string.app_name), centralSpreadsheetId);
-        teamSheet = new Sheets(this, this,getString(R.string.app_name), teamSpreadsheetId,teamSpreadsheetId);
+        centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
+        teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
         showInstructions(rl);
 
         bubble = (Button) findViewById(R.id.bubble);
@@ -118,14 +116,38 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         // the bubble should not be visible until the trial has started
         bubble.setVisibility(View.GONE);
 
-        //TODO: @Brian I had to start some of the intent handling
+        Intent intent = getIntent();
+        String action = intent.getAction();
 
-        Intent i = getIntent();
-        //If its trial, set WRITE_TO_CENTRAL to true
-        //otherwise, it should remain false
-        if(i.hasExtra("Appendage")){
+        if (action == null) {
+            //TODO: Determine what to do for null intent Action
+        }
+
+        if (action.equals("edu.umd.cmsc436.pop.action.TRIAL")) {
             //the intent is the TRIAL, so we gotta send data to the main sheet
             WRITE_TO_CENTRAL = true;
+            IN_PRACTICE_MODE = false;
+
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                USER_ID = extras.getString("patient id");
+                switch (extras.getString("appendage")) {
+                    case "RH_POP":
+                        APPENDAGE = Sheets.TestType.RH_POP;
+                        break;
+                    case "LH_POP":
+                        APPENDAGE = Sheets.TestType.LH_POP;
+                        break;
+                }
+
+                //TODO: Determine what to do for invalid appendage argument
+            }
+        } else if (action.equals("edu.umd.cmsc436.pop.action.PRACTICE")) {
+            WRITE_TO_CENTRAL = false;
+            IN_PRACTICE_MODE = true;
+        } else if (action.equals("edu.umd.cmsc436.pop.action.HELP")) {
+            WRITE_TO_CENTRAL = false;
+            IN_PRACTICE_MODE = true;
         }
 
         startTrial = (Button) findViewById(R.id.startTrial);
@@ -135,7 +157,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
                 startTime = System.currentTimeMillis();
                 startTimer.run();
                 startTest();
-                today = USER_ID + " " +(new Timestamp(System.currentTimeMillis())).toString();
+                today = USER_ID + " " + (new Timestamp(System.currentTimeMillis())).toString();
                 // remove the start trial button
                 startTrial.setVisibility(View.INVISIBLE);
                 findViewById(R.id.helpButton).setVisibility(View.GONE);
@@ -154,7 +176,9 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         super.onStop();
         bubble.setVisibility(View.GONE);
         if(!writtenToSheets){
-            Log.i("Test","PARTIAL trial");
+            /*
+            Log.i("Test", "PARTIAL trial");
+            */
             WRITE_TO_CENTRAL = false;
             today = "PARTIAL TRIAL " + today;
             completeTrial();
@@ -209,12 +233,8 @@ public class BubbleActivity extends Activity implements Sheets.Host {
                     (y >= 0);
         }
 
-        //Log.i("BubbleAct",layoutWidth +", " + layoutHeight);
-        //Log.i("BubbleAct",x +", " + y);
-        //Log.i("BubbleAct",bubble.getWidth() +", " + bubble.getHeight()+"\n");
-
-        scene.leftMargin = (int)x;
-        scene.topMargin = (int)y;
+        scene.leftMargin = (int) x;
+        scene.topMargin = (int) y;
 
         // set bubble at new location
         bubble.setLayoutParams(scene);
@@ -226,13 +246,12 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         // increment trialNum
         //totalBubbles++;
         //Log.i("BubbleAct",totalBubbles + " bubbles popped");
-
         
+
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
 
         //moveBubble();
-
     }
 
     /*
@@ -259,38 +278,32 @@ public class BubbleActivity extends Activity implements Sheets.Host {
         if (poppedBubbles > 0) {
             double totalReactionTime = 0;
             for (int i = 0; i < lifespans.size(); i++) {
-                Log.i("Lifespan",""+lifespans.get(i));
+                //Log.i("Lifespan", "" + lifespans.get(i));
                 totalReactionTime += lifespans.get(i);
                 //LH_POP WILL HAVE LIFESPANS
-                teamSheet.writeData(Sheets.TestType.LH_POP, today,new Float(lifespans.get(i)));
+                teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
             }
             result = totalReactionTime / poppedBubbles;
-            double stdDev = standardDeviation(lifespans,totalReactionTime/lifespans.size());
-            Log.i("stdDev",""+stdDev);
-            teamSheet.writeData(Sheets.TestType.LH_CURL,today,(float) stdDev);
+            double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
+            teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
 
         } else {
             result = 0.0;
         }
         //RH_POP FINAL RESULTS
-        Log.i("result",""+result);
+        //Log.i("result", "" + result);
         teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
-
         Intent data = new Intent();
-        data.putExtra("float",result);
+        data.putExtra("float", result);
 
         if (WRITE_TO_CENTRAL) {
             //Only write to central sheet if intent is TRIAL
-
-
-
-            setResult(Activity.RESULT_OK,data);
-
-            //centralSheet.writeData(Sheets.TestType.LH_POP, USER_ID, (float) result);
+            centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
+            setResult(Activity.RESULT_OK, data);
         } else {
             //this means the user either closed the program early, or they did PRACTICE
-            setResult(Activity.RESULT_CANCELED,data);
+            setResult(Activity.RESULT_CANCELED, data);
         }
 
         writtenToSheets = true;
@@ -335,7 +348,7 @@ public class BubbleActivity extends Activity implements Sheets.Host {
                 (y >= 0);
 
         while (!legalBubbleLocation) {
-            Log.i("BubbleAct","illegalBubbleLocation");
+            //Log.i("BubbleAct", "illegalBubbleLocation");
             x = bubble.getWidth()
                     + new Random()
                     .nextInt(fullWidth - (5 * bubble.getWidth()));
@@ -421,18 +434,20 @@ public class BubbleActivity extends Activity implements Sheets.Host {
             System.out.println(e.getClass());
             throw new RuntimeException(e);
         }
-        Log.i(getClass().getSimpleName(), "Done");
+        //Log.i(getClass().getSimpleName(), "Done");
     }
 
     public void showInstructions(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(BubbleActivity.this);
-        builder.setTitle("Bubble Test Instructions");
-        builder.setMessage("Try to hit as many bubbles as you can once the test starts" );
+        AlertDialog.Builder builder = new AlertDialog.Builder(PopActivity.this);
+        if (IN_PRACTICE_MODE)
+            builder.setTitle("Pop Practice Instructions");
+        else
+            builder.setTitle("Pop Test Instructions");
+        builder.setMessage("Try to hit as many bubbles as you can once the test starts");
 
-        builder.setPositiveButton("Okay",new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int id) {
-                // if this button is clicked, close
-                // current activity
+        builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // if this button is clicked, close current activity
             }
         });
         AlertDialog alertDialog = builder.create();

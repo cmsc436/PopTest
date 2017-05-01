@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BubbleTest.iml" filepath="$PROJECT_DIR$/BubbleTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MS-BalloonTest.iml" filepath="$PROJECT_DIR$/MS-BalloonTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/sheets436-0.0.5-release/sheets436-0.0.5-release.iml" filepath="$PROJECT_DIR$/sheets436-0.0.5-release/sheets436-0.0.5-release.iml" />
     </modules>
