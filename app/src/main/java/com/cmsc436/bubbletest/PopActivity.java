@@ -304,8 +304,8 @@ public class PopActivity extends Activity implements Sheets.Host {
         data.putExtra("float", result);
 
         if (WRITE_TO_CENTRAL) {
-            //Only write to central sheet if intent is TRIAL
-            centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
+            //Only write to central sheet if intent is TRIAL .. Not necessary - front end does this
+            //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
             setResult(Activity.RESULT_OK, data);
         } else {
             //this means the user either closed the program early, or they did PRACTICE
