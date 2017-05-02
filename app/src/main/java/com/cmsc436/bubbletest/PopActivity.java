@@ -116,7 +116,8 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         // initialize sheet
         //centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
-        teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
+        //TODO reenable teamsheet after demo
+        //teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
         try {
             showInstructions(rl);
         } catch(NullPointerException e){
@@ -287,7 +288,8 @@ public class PopActivity extends Activity implements Sheets.Host {
                 //Log.i("Lifespan", "" + lifespans.get(i));
                 totalReactionTime += lifespans.get(i);
                 //LH_POP WILL HAVE LIFESPANS
-                teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
+                //TODO figure out occasional account picker error with writing to teamsheet
+                //teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
             }
             result = totalReactionTime / poppedBubbles;
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
