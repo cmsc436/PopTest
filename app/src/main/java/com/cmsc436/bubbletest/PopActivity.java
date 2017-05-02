@@ -115,7 +115,7 @@ public class PopActivity extends Activity implements Sheets.Host {
         debugNarrator.setVisibility(View.INVISIBLE);
 
         // initialize sheet
-        centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
+        //centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
         teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
         try {
             showInstructions(rl);
