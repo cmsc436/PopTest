@@ -253,7 +253,7 @@ public class PopActivity extends Activity implements Sheets.Host {
         // increment trialNum
         //totalBubbles++;
         //Log.i("BubbleAct",totalBubbles + " bubbles popped");
-        
+
 
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
