@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +25,13 @@ import java.util.Random;
 import static android.R.attr.src;
 
 public class PopActivity extends Activity implements Sheets.Host {
+
+    public static final String KEY_APPENDAGE = "appendage";
+    public static final String KEY_TRIAL_NUM = "trial num";
+    public static final String KEY_TRIAL_OUT_OF = "trial out of";
+    public static final String KEY_PATIENT_ID = "patient id";
+    public static final String KEY_SCORE = "score";
+    public static final String KEY_DIFFICULTY = "difficulty";
 
     //int totalBubbles = 0;
     int poppedBubbles = 0;
@@ -130,15 +138,9 @@ public class PopActivity extends Activity implements Sheets.Host {
 
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                USER_ID = extras.getString("patient id");
-                switch (extras.getString("appendage")) {
-                    case "RH_POP":
-                        APPENDAGE = Sheets.TestType.RH_POP;
-                        break;
-                    case "LH_POP":
-                        APPENDAGE = Sheets.TestType.LH_POP;
-                        break;
-                }
+                USER_ID = extras.getString(KEY_PATIENT_ID);
+                Sheets.TestType appendange = getAppendage(intent);
+                Log.i("Pop",appendange + USER_ID);
 
                 //TODO: Determine what to do for invalid appendage argument
             }
@@ -474,5 +476,15 @@ public class PopActivity extends Activity implements Sheets.Host {
         return Math.sqrt(stdDev);
     }
 
+    @Nullable
+    public static Sheets.TestType getAppendage (Intent i) {
+        int temp = i.getIntExtra(KEY_APPENDAGE, -1);
+
+        if (temp < 0 || temp >= Sheets.TestType.values().length) {
+            return null;
+        }
+
+        return Sheets.TestType.values()[temp];
+    }
 
 }
