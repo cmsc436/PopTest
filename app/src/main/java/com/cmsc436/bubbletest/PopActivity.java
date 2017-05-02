@@ -293,14 +293,16 @@ public class PopActivity extends Activity implements Sheets.Host {
             }
             result = totalReactionTime / poppedBubbles;
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
-            teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
+            //TODO reinsert after demo
+            //teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
 
         } else {
             result = 0.0;
         }
         //RH_POP FINAL RESULTS
         //Log.i("result", "" + result);
-        teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
+        //TODO reinsert after demo
+        //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
         Intent data = new Intent();
         data.putExtra("float", result);
