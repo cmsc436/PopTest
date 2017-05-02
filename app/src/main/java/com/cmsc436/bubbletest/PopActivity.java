@@ -117,7 +117,11 @@ public class PopActivity extends Activity implements Sheets.Host {
         // initialize sheet
         centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
         teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
-        showInstructions(rl);
+        try {
+            showInstructions(rl);
+        } catch(NullPointerException e){
+            e.printStackTrace();
+        }
 
         bubble = (Button) findViewById(R.id.bubble);
 
@@ -139,8 +143,8 @@ public class PopActivity extends Activity implements Sheets.Host {
             Bundle extras = intent.getExtras();
             if (extras != null) {
                 USER_ID = extras.getString(KEY_PATIENT_ID);
-                Sheets.TestType appendange = getAppendage(intent);
-                Log.i("Pop",appendange + USER_ID);
+                APPENDAGE = getAppendage(intent);
+                Log.i("Pop",APPENDAGE + USER_ID);
 
                 //TODO: Determine what to do for invalid appendage argument
             }
@@ -441,10 +445,11 @@ public class PopActivity extends Activity implements Sheets.Host {
 
     public void showInstructions(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(PopActivity.this);
-        if (IN_PRACTICE_MODE)
+        if (IN_PRACTICE_MODE) {
             builder.setTitle("Pop Practice Instructions");
-        else
+        } else {
             builder.setTitle("Pop Test Instructions");
+        }
         builder.setMessage("Try to hit as many bubbles as you can once the test starts");
 
         builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
