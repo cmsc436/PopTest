@@ -59,7 +59,7 @@ public class PopActivity extends Activity implements Sheets.Host {
     private String centralSpreadsheetId = "1YvI3CjS4ZlZQDYi5PaiA7WGGcoCsZfLoSFM0IdvdbDU";
     private String teamSpreadsheetId = "1jus0ktF2tQw2sOjsxVb4zoDeD1Zw90KAMFNTQdkFiJQ";
 
-    private static String USER_ID;
+    private static String USER_ID = "PRACTICE";
     private static Sheets.TestType APPENDAGE;
     private static int TRIAL_NUM;
     private static int TRIAL_OUT_OF;
@@ -171,7 +171,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                 startTime = System.currentTimeMillis();
                 startTimer.run();
                 startTest();
-                today = USER_ID + " " + (new Timestamp(System.currentTimeMillis())).toString();
+                today = USER_ID; //+ " " + (new Timestamp(System.currentTimeMillis())).toString();
                 // remove the start trial button
                 startTrial.setVisibility(View.INVISIBLE);
                 findViewById(R.id.helpButton).setVisibility(View.GONE);
@@ -304,6 +304,7 @@ public class PopActivity extends Activity implements Sheets.Host {
             sheet.writeTrials(Sheets.TestType.LH_POP,today,ls);
 
             result = totalReactionTime / poppedBubbles;
+            Log.i("if", result + " " + poppedBubbles);
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
 
             float[] stD = {(float) stdDev};
@@ -315,9 +316,10 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         } else {
             result = 0.0;
+            Log.i("else", "" + poppedBubbles);
         }
         //RH_POP FINAL RESULTS
-        //Log.i("result", "" + result);
+        Log.i("result", "" + result);
 
         float[] res = {(float) result};
         sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
@@ -325,16 +327,13 @@ public class PopActivity extends Activity implements Sheets.Host {
         //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
 
-        Intent data = new Intent();
-        data.putExtra("float", result);
-
-        if (!IN_PRACTICE_MODE) {
+        if(errored){
+            //this means the user closed the program early
+            setResult(Activity.RESULT_CANCELED, TrialMode.getResultIntent((float) result));
+        }else if (!IN_PRACTICE_MODE) {
             //Only write to central sheet if intent is TRIAL
             //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
-            setResult(Activity.RESULT_OK, data);
-        } else if(errored){
-            //this means the user closed the program early
-            setResult(Activity.RESULT_CANCELED, data);
+            setResult(Activity.RESULT_OK, TrialMode.getResultIntent((float) result));
         }
 
         writtenToSheets = true;
