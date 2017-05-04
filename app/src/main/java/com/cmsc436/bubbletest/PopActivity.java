@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import edu.umd.cmsc436.frontendhelper.TrialMode;
 import edu.umd.cmsc436.sheets.Sheets;
 
 import java.sql.Timestamp;
@@ -22,16 +23,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static android.R.attr.src;
-
 public class PopActivity extends Activity implements Sheets.Host {
-
-    public static final String KEY_APPENDAGE = "appendage";
-    public static final String KEY_TRIAL_NUM = "trial num";
-    public static final String KEY_TRIAL_OUT_OF = "trial out of";
-    public static final String KEY_PATIENT_ID = "patient id";
-    public static final String KEY_SCORE = "score";
-    public static final String KEY_DIFFICULTY = "difficulty";
 
     //int totalBubbles = 0;
     int poppedBubbles = 0;
@@ -62,17 +54,19 @@ public class PopActivity extends Activity implements Sheets.Host {
     public static final int LIB_PLAY_SERVICES_REQUEST_CODE = 1004;
 
     // main spreadsheet information
-    private Sheets centralSheet;
-    private Sheets teamSheet;
+    private Sheets sheet;
 
     private String centralSpreadsheetId = "1YvI3CjS4ZlZQDYi5PaiA7WGGcoCsZfLoSFM0IdvdbDU";
     private String teamSpreadsheetId = "1jus0ktF2tQw2sOjsxVb4zoDeD1Zw90KAMFNTQdkFiJQ";
 
     private static String USER_ID;
     private static Sheets.TestType APPENDAGE;
+    private static int TRIAL_NUM;
+    private static int TRIAL_OUT_OF;
+    private static int DIFFICULTY;
 
     // indicates if test should write to central spreadsheet
-    private static boolean WRITE_TO_CENTRAL = false;
+    //private static boolean WRITE_TO_CENTRAL = false;
     private static boolean IN_PRACTICE_MODE = false;
 
     //private long secs,mins,hrs;
@@ -81,6 +75,8 @@ public class PopActivity extends Activity implements Sheets.Host {
     private long elapsedTime;
     private Handler mHandler = new Handler();
     private final int REFRESH_RATE = 100;
+
+    private boolean errored = false;
 
     private Runnable startTimer = new Runnable() {
         public void run() {
@@ -92,6 +88,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        errored = false;
                         bubble.setVisibility(View.GONE);
                         if(!writtenToSheets) {
                             completeTrial();
@@ -115,6 +112,11 @@ public class PopActivity extends Activity implements Sheets.Host {
         debugNarrator.setVisibility(View.INVISIBLE);
 
         // initialize sheet
+        sheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, teamSpreadsheetId);
+
+        //we don't need to show instructions before test
+        /*try {
+
         //centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
         //TODO reenable teamsheet after demo
         //teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
@@ -122,7 +124,7 @@ public class PopActivity extends Activity implements Sheets.Host {
             showInstructions(rl);
         } catch(NullPointerException e){
             e.printStackTrace();
-        }
+        }*/
 
         bubble = (Button) findViewById(R.id.bubble);
 
@@ -137,23 +139,28 @@ public class PopActivity extends Activity implements Sheets.Host {
         }
 
         if (action.equals("edu.umd.cmsc436.pop.action.TRIAL")) {
-            //the intent is the TRIAL, so we gotta send data to the main sheet
-            WRITE_TO_CENTRAL = true;
+            //the intent is the TRIAL
+
             IN_PRACTICE_MODE = false;
 
-            Bundle extras = intent.getExtras();
-            if (extras != null) {
-                USER_ID = extras.getString(KEY_PATIENT_ID);
-                APPENDAGE = getAppendage(intent);
-                Log.i("Pop",APPENDAGE + USER_ID);
+            //Bundle extras = intent.getExtras();
 
-                //TODO: Determine what to do for invalid appendage argument
-            }
+            USER_ID = TrialMode.getPatientId(intent);
+            APPENDAGE = TrialMode.getAppendage(intent);
+            DIFFICULTY = TrialMode.getDifficulty(intent);
+            TRIAL_NUM = TrialMode.getTrialNum(intent);
+            TRIAL_OUT_OF = TrialMode.getTrialOutOf(intent);
+
+
+            //Log.i("Pop",APPENDAGE + USER_ID);
+
+            //TODO: Determine what to do for invalid appendage argument
+
         } else if (action.equals("edu.umd.cmsc436.pop.action.PRACTICE")) {
-            WRITE_TO_CENTRAL = false;
+            //WRITE_TO_CENTRAL = false;
             IN_PRACTICE_MODE = true;
         } else if (action.equals("edu.umd.cmsc436.pop.action.HELP")) {
-            WRITE_TO_CENTRAL = false;
+            //WRITE_TO_CENTRAL = false;
             IN_PRACTICE_MODE = true;
         }
 
@@ -186,7 +193,8 @@ public class PopActivity extends Activity implements Sheets.Host {
             /*
             Log.i("Test", "PARTIAL trial");
             */
-            WRITE_TO_CENTRAL = false;
+            //WRITE_TO_CENTRAL = false;
+            errored = true;
             today = "PARTIAL TRIAL " + today;
             completeTrial();
         }
@@ -282,37 +290,50 @@ public class PopActivity extends Activity implements Sheets.Host {
             bubble.setVisibility(View.GONE);
         }
 
+        float[] ls = new float[lifespans.size()];
+
         if (poppedBubbles > 0) {
             double totalReactionTime = 0;
             for (int i = 0; i < lifespans.size(); i++) {
-                //Log.i("Lifespan", "" + lifespans.get(i));
                 totalReactionTime += lifespans.get(i);
+                ls[i] = new Float(lifespans.get(i));
                 //LH_POP WILL HAVE LIFESPANS
-                //TODO figure out occasional account picker error with writing to teamsheet
                 //teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
             }
+            //LH_POP WILL HAVE LIFESPANS
+            sheet.writeTrials(Sheets.TestType.LH_POP,today,ls);
+
             result = totalReactionTime / poppedBubbles;
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
+
+            float[] stD = {(float) stdDev};
+            sheet.writeTrials(Sheets.TestType.LH_CURL, today,stD);
+
             //TODO reinsert after demo
             //teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
+
 
         } else {
             result = 0.0;
         }
         //RH_POP FINAL RESULTS
         //Log.i("result", "" + result);
+
+        float[] res = {(float) result};
+        sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
         //TODO reinsert after demo
         //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
+
 
         Intent data = new Intent();
         data.putExtra("float", result);
 
-        if (WRITE_TO_CENTRAL) {
-            //Only write to central sheet if intent is TRIAL .. Not necessary - front end does this
+        if (!IN_PRACTICE_MODE) {
+            //Only write to central sheet if intent is TRIAL
             //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
             setResult(Activity.RESULT_OK, data);
-        } else {
-            //this means the user either closed the program early, or they did PRACTICE
+        } else if(errored){
+            //this means the user closed the program early
             setResult(Activity.RESULT_CANCELED, data);
         }
 
@@ -413,13 +434,13 @@ public class PopActivity extends Activity implements Sheets.Host {
     // class example app
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        centralSheet.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        sheet.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        centralSheet.onActivityResult(requestCode, resultCode, data);
+        sheet.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -483,17 +504,6 @@ public class PopActivity extends Activity implements Sheets.Host {
             stdDev += ((d - average)*(d - average)) / (arr.size()-1);
         }
         return Math.sqrt(stdDev);
-    }
-
-    @Nullable
-    public static Sheets.TestType getAppendage (Intent i) {
-        int temp = i.getIntExtra(KEY_APPENDAGE, -1);
-
-        if (temp < 0 || temp >= Sheets.TestType.values().length) {
-            return null;
-        }
-
-        return Sheets.TestType.values()[temp];
     }
 
 }
