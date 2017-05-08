@@ -7,21 +7,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import edu.umd.cmsc436.frontendhelper.TrialMode;
-import edu.umd.cmsc436.sheets.Sheets;
-
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
+
+import edu.umd.cmsc436.frontendhelper.TrialMode;
+import edu.umd.cmsc436.sheets.Sheets;
 
 public class PopActivity extends Activity implements Sheets.Host {
 
@@ -371,6 +370,25 @@ public class PopActivity extends Activity implements Sheets.Host {
     public void initialLocation() {
         //TODO: FIX
         bubble = (Button) findViewById(R.id.bubble);
+
+        // TODO: width and height should be in DP not PX
+        // can convert px to dp by obtaining displaymetrics and using formula
+        ViewGroup.LayoutParams params = bubble.getLayoutParams();
+        switch (DIFFICULTY) {
+            case 1: params.width = 225;
+                params.height = 225;
+                break;
+            case 2: params.width = 150;
+                params.height = 150;
+                break;
+            case 3: params.width = 100;
+                params.height = 100;
+                break;
+            default: params.width = 225;
+                params.height = 225;
+                break;
+        }
+        bubble.setLayoutParams(params);
 
         // get screen dimensions
         RelativeLayout.LayoutParams scene = (RelativeLayout.LayoutParams) bubble.getLayoutParams();
