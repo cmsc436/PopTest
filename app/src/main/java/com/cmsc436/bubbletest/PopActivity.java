@@ -82,7 +82,7 @@ public class PopActivity extends Activity implements Sheets.Host {
         public void run() {
             elapsedTime = System.currentTimeMillis() - startTime;
             //updateTimer(elapsedTime);
-            if(elapsedTime < 10000) {
+            if(elapsedTime < 25000) {
                 mHandler.postDelayed(this, REFRESH_RATE);
             } else {
                 runOnUiThread(new Runnable() {
@@ -338,11 +338,27 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         writtenToSheets = true;
 
+        // score based on DIFFICULTY
+        double scoreMultiplier;
+        switch (DIFFICULTY) {
+            case 1: scoreMultiplier = 1;
+                break;
+            case 2: scoreMultiplier = 1.2;
+                break;
+            case 3: scoreMultiplier = 1.5;
+                break;
+            default: scoreMultiplier = 1;
+                break;
+        }
+        float scoreMultiplied = (float) (result * scoreMultiplier);
+
         TextView resultScreen = (TextView) findViewById(R.id.showResult);
 
         resultScreen.setText("You hit " + poppedBubbles + " bubbles.\n"
                         + "Your average tap response time was " + precision.format(result)
                         + " seconds.\n"
+                        + "Your score was " + precision.format(scoreMultiplied)
+                        + "\n"
                 //+ detailData
         );
         resultScreen.setTextSize(40);
