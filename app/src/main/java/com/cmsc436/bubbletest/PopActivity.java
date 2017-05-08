@@ -7,21 +7,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import edu.umd.cmsc436.frontendhelper.TrialMode;
-import edu.umd.cmsc436.sheets.Sheets;
-
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
+
+import edu.umd.cmsc436.frontendhelper.TrialMode;
+import edu.umd.cmsc436.sheets.Sheets;
 
 public class PopActivity extends Activity implements Sheets.Host {
 
@@ -82,7 +81,7 @@ public class PopActivity extends Activity implements Sheets.Host {
         public void run() {
             elapsedTime = System.currentTimeMillis() - startTime;
             //updateTimer(elapsedTime);
-            if(elapsedTime < 10000) {
+            if(elapsedTime < 25000) {
                 mHandler.postDelayed(this, REFRESH_RATE);
             } else {
                 runOnUiThread(new Runnable() {
@@ -338,11 +337,27 @@ public class PopActivity extends Activity implements Sheets.Host {
 
         writtenToSheets = true;
 
+        // score based on DIFFICULTY
+        double scoreMultiplier;
+        switch (DIFFICULTY) {
+            case 1: scoreMultiplier = 1;
+                break;
+            case 2: scoreMultiplier = 1.2;
+                break;
+            case 3: scoreMultiplier = 1.5;
+                break;
+            default: scoreMultiplier = 1;
+                break;
+        }
+        float scoreMultiplied = (float) (result * scoreMultiplier);
+
         TextView resultScreen = (TextView) findViewById(R.id.showResult);
 
         resultScreen.setText("You hit " + poppedBubbles + " bubbles.\n"
                         + "Your average tap response time was " + precision.format(result)
                         + " seconds.\n"
+                        + "Your score was " + precision.format(scoreMultiplied)
+                        + "\n"
                 //+ detailData
         );
         resultScreen.setTextSize(40);
@@ -355,6 +370,25 @@ public class PopActivity extends Activity implements Sheets.Host {
     public void initialLocation() {
         //TODO: FIX
         bubble = (Button) findViewById(R.id.bubble);
+
+        // TODO: width and height should be in DP not PX
+        // can convert px to dp by obtaining displaymetrics and using formula
+        ViewGroup.LayoutParams params = bubble.getLayoutParams();
+        switch (DIFFICULTY) {
+            case 1: params.width = 225;
+                params.height = 225;
+                break;
+            case 2: params.width = 150;
+                params.height = 150;
+                break;
+            case 3: params.width = 100;
+                params.height = 100;
+                break;
+            default: params.width = 225;
+                params.height = 225;
+                break;
+        }
+        bubble.setLayoutParams(params);
 
         // get screen dimensions
         RelativeLayout.LayoutParams scene = (RelativeLayout.LayoutParams) bubble.getLayoutParams();
