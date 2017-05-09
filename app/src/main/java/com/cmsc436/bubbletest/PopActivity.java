@@ -82,6 +82,7 @@ public class PopActivity extends Activity implements Sheets.Host {
             elapsedTime = System.currentTimeMillis() - startTime;
             //updateTimer(elapsedTime);
             if(elapsedTime < 25000) {
+                //Log.i("Timer",""+elapsedTime);
                 mHandler.postDelayed(this, REFRESH_RATE);
             } else {
                 runOnUiThread(new Runnable() {
@@ -317,27 +318,7 @@ public class PopActivity extends Activity implements Sheets.Host {
             result = 0.0;
             Log.i("else", "" + poppedBubbles);
         }
-        //RH_POP FINAL RESULTS
-        Log.i("result", "" + result);
 
-        float[] res = {(float) result};
-        sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
-        //TODO reinsert after demo
-        //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
-
-
-        if(errored){
-            //this means the user closed the program early
-            setResult(Activity.RESULT_CANCELED, TrialMode.getResultIntent((float) result));
-        }else if (!IN_PRACTICE_MODE) {
-            //Only write to central sheet if intent is TRIAL
-            //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
-            setResult(Activity.RESULT_OK, TrialMode.getResultIntent((float) result));
-        }
-
-        writtenToSheets = true;
-
-        // score based on DIFFICULTY
         double scoreMultiplier;
         switch (DIFFICULTY) {
             case 1: scoreMultiplier = 1;
@@ -350,6 +331,29 @@ public class PopActivity extends Activity implements Sheets.Host {
                 break;
         }
         float scoreMultiplied = (float) (result * scoreMultiplier);
+
+        //RH_POP FINAL RESULTS
+        Log.i("result", "" + scoreMultiplied);
+
+        float[] res = {scoreMultiplied};
+        sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
+        //TODO reinsert after demo
+        //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
+
+
+        if(errored){
+            //this means the user closed the program early
+            setResult(Activity.RESULT_CANCELED, TrialMode.getResultIntent(scoreMultiplied));
+        }else if (!IN_PRACTICE_MODE) {
+            //Only write to central sheet if intent is TRIAL
+            //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
+            setResult(Activity.RESULT_OK, TrialMode.getResultIntent(scoreMultiplied));
+        }
+
+        writtenToSheets = true;
+
+        // score based on DIFFICULTY
+
 
         TextView resultScreen = (TextView) findViewById(R.id.showResult);
 
@@ -371,25 +375,29 @@ public class PopActivity extends Activity implements Sheets.Host {
         //TODO: FIX
         bubble = (Button) findViewById(R.id.bubble);
 
+        Log.i("Bubble",bubble.getWidth() + " " + bubble.getHeight());
         // TODO: width and height should be in DP not PX
         // can convert px to dp by obtaining displaymetrics and using formula
         ViewGroup.LayoutParams params = bubble.getLayoutParams();
         switch (DIFFICULTY) {
-            case 1: params.width = 225;
-                params.height = 225;
+            case 1:
+                params.width = dpToPx(100);
+                params.height = dpToPx(100);
                 break;
-            case 2: params.width = 150;
-                params.height = 150;
+            case 2:
+                params.width = dpToPx(70);
+                params.height = dpToPx(70);
                 break;
-            case 3: params.width = 100;
-                params.height = 100;
+            case 3:
+                params.width = dpToPx(50);
+                params.height = dpToPx(50);
                 break;
-            default: params.width = 225;
-                params.height = 225;
+            default:
+                params.width = dpToPx(100);
+                params.height = dpToPx(100);
                 break;
         }
         bubble.setLayoutParams(params);
-
         // get screen dimensions
         RelativeLayout.LayoutParams scene = (RelativeLayout.LayoutParams) bubble.getLayoutParams();
         DisplayMetrics metrics = new DisplayMetrics();
@@ -537,6 +545,11 @@ public class PopActivity extends Activity implements Sheets.Host {
             stdDev += ((d - average)*(d - average)) / (arr.size()-1);
         }
         return Math.sqrt(stdDev);
+    }
+
+    public int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
 }
