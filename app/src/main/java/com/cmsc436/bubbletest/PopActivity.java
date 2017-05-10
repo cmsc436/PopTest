@@ -272,7 +272,6 @@ public class PopActivity extends Activity implements Sheets.Host {
             Log.i("if", result + " " + poppedBubbles);
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
             float[] stD = {(float) stdDev};
-            // TODO: why is this writing to LH_CURL?
             sheet.writeTrials(Sheets.TestType.LH_CURL, today,stD);
         } else {
             result = 0.0;
