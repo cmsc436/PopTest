@@ -24,7 +24,6 @@ import edu.umd.cmsc436.sheets.Sheets;
 
 public class PopActivity extends Activity implements Sheets.Host {
 
-    //int totalBubbles = 0;
     int poppedBubbles = 0;
     long timeOfBirth;
     long timeOfDeath;
@@ -68,8 +67,6 @@ public class PopActivity extends Activity implements Sheets.Host {
     //private static boolean WRITE_TO_CENTRAL = false;
     private static boolean IN_PRACTICE_MODE = false;
 
-    //private long secs,mins,hrs;
-    //private String minutes,seconds;
     private long startTime;
     private long elapsedTime;
     private Handler mHandler = new Handler();
@@ -80,9 +77,8 @@ public class PopActivity extends Activity implements Sheets.Host {
     private Runnable startTimer = new Runnable() {
         public void run() {
             elapsedTime = System.currentTimeMillis() - startTime;
-            //updateTimer(elapsedTime);
+            // length of trial
             if(elapsedTime < 25000) {
-                //Log.i("Timer",""+elapsedTime);
                 mHandler.postDelayed(this, REFRESH_RATE);
             } else {
                 runOnUiThread(new Runnable() {
@@ -114,18 +110,6 @@ public class PopActivity extends Activity implements Sheets.Host {
         // initialize sheet
         sheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, teamSpreadsheetId);
 
-        //we don't need to show instructions before test
-        /*try {
-
-        //centralSheet = new Sheets(this, this, getString(R.string.app_name), centralSpreadsheetId, centralSpreadsheetId);
-        //TODO reenable teamsheet after demo
-        //teamSheet = new Sheets(this, this, getString(R.string.app_name), teamSpreadsheetId, teamSpreadsheetId);
-        try {
-            showInstructions(rl);
-        } catch(NullPointerException e){
-            e.printStackTrace();
-        }*/
-
         bubble = (Button) findViewById(R.id.bubble);
 
         // the bubble should not be visible until the trial has started
@@ -135,15 +119,11 @@ public class PopActivity extends Activity implements Sheets.Host {
         String action = intent.getAction();
 
         if (action == null) {
-            //TODO: Determine what to do for null intent Action
         }
 
         if (action.equals("edu.umd.cmsc436.pop.action.TRIAL")) {
-            //the intent is the TRIAL
-
+            // the intent is the TRIAL
             IN_PRACTICE_MODE = false;
-
-            //Bundle extras = intent.getExtras();
 
             USER_ID = TrialMode.getPatientId(intent);
             APPENDAGE = TrialMode.getAppendage(intent);
@@ -151,16 +131,9 @@ public class PopActivity extends Activity implements Sheets.Host {
             TRIAL_NUM = TrialMode.getTrialNum(intent);
             TRIAL_OUT_OF = TrialMode.getTrialOutOf(intent);
 
-
-            //Log.i("Pop",APPENDAGE + USER_ID);
-
-            //TODO: Determine what to do for invalid appendage argument
-
         } else if (action.equals("edu.umd.cmsc436.pop.action.PRACTICE")) {
-            //WRITE_TO_CENTRAL = false;
             IN_PRACTICE_MODE = true;
         } else if (action.equals("edu.umd.cmsc436.pop.action.HELP")) {
-            //WRITE_TO_CENTRAL = false;
             IN_PRACTICE_MODE = true;
         }
 
@@ -171,7 +144,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                 startTime = System.currentTimeMillis();
                 startTimer.run();
                 startTest();
-                today = USER_ID; //+ " " + (new Timestamp(System.currentTimeMillis())).toString();
+                today = USER_ID;
                 // remove the start trial button
                 startTrial.setVisibility(View.INVISIBLE);
                 findViewById(R.id.helpButton).setVisibility(View.GONE);
@@ -190,32 +163,31 @@ public class PopActivity extends Activity implements Sheets.Host {
         super.onStop();
         bubble.setVisibility(View.GONE);
         if(!writtenToSheets){
-            /*
-            Log.i("Test", "PARTIAL trial");
-            */
-            //WRITE_TO_CENTRAL = false;
             errored = true;
             today = "PARTIAL TRIAL " + today;
             completeTrial();
         }
     }
 
+    /*
+    This method initiates the test
+     */
     public void startTest() {
         initialLocation();
         bubble.setVisibility(View.VISIBLE);
     }
 
     /*
-    Given the start point and a fixed radius, generate a random x,y pair
+    This method generates a new x and y location for the bubble to appear based off of the location
+    of the previous bubble
      */
     public void randomEuclideanDistancePointsGenerator() {
         int rangeMin = 0;
         int rangeMax = 360;
 
-        Random r = new Random(); // generate a random angle value
+        // generate a random angle value
+        Random r = new Random();
         double randomAngle = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-
-
         double x = oldBubbleX + BUBBLE_RADIUS * Math.cos(randomAngle);
         double y = oldBubbleY + BUBBLE_RADIUS * Math.sin(randomAngle);
 
@@ -230,13 +202,14 @@ public class PopActivity extends Activity implements Sheets.Host {
         int layoutWidth = metrics.widthPixels;
         int layoutHeight = metrics.heightPixels;
 
+        // ensure the location is legal
         boolean legalBubbleLocation = (x + bubble.getWidth() <= layoutWidth-CORRECTION_FACTOR) &&
                 (y + bubble.getHeight() <= layoutHeight-CORRECTION_FACTOR) &&
                 (x >= 0) &&
                 (y >= 0);
 
+        // if the location is illegal, produce a new location
         while (!legalBubbleLocation) {
-            //Log.i("BubbleAct","illegalBubbleLocation");
             randomAngle = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
             x = oldBubbleX + BUBBLE_RADIUS * Math.cos(randomAngle);
             y = oldBubbleY + BUBBLE_RADIUS * Math.sin(randomAngle);
@@ -258,34 +231,30 @@ public class PopActivity extends Activity implements Sheets.Host {
         // save time of appearance as time of birth
         timeOfBirth = System.nanoTime();
 
-        // increment trialNum
-        //totalBubbles++;
-        //Log.i("BubbleAct",totalBubbles + " bubbles popped");
-
-
         oldBubbleX = (int)x;
         oldBubbleY = (int)y;
-
-        //moveBubble();
     }
 
     /*
-    The bubble should be moved to a constant distance of 50 pixels away from the current bubble.
+    This method generates a new bubble.
+    The bubble should be moved to a constant distance away from the current bubble.
     The distance can be the radius of a circle drawn around the most recent bubble.
-    The next bubble will pop up instantaneously.
-    Trial lasts for 10 seconds.
+    The new bubble will pop up instantaneously.
      */
     public void moveBubble() {
         bubble.setVisibility(View.GONE);
         randomEuclideanDistancePointsGenerator();
     }
 
+    /*
+    This method writes all necessary data to their respective spreadsheets and presents the user
+    with their singular score
+     */
     private void completeTrial() {
-        //totalBubbles = 100;
-
         double result = 0.0;
         DecimalFormat precision = new DecimalFormat("0.00");
 
+        // remove bubble
         if(bubble.getVisibility() == View.VISIBLE){
             bubble.setVisibility(View.GONE);
         }
@@ -297,28 +266,20 @@ public class PopActivity extends Activity implements Sheets.Host {
             for (int i = 0; i < lifespans.size(); i++) {
                 totalReactionTime += lifespans.get(i);
                 ls[i] = new Float(lifespans.get(i));
-                //LH_POP WILL HAVE LIFESPANS
-                //teamSheet.writeData(Sheets.TestType.LH_POP, today, new Float(lifespans.get(i)));
             }
-            //LH_POP WILL HAVE LIFESPANS
             sheet.writeTrials(Sheets.TestType.LH_POP,today,ls);
-
             result = totalReactionTime / poppedBubbles;
             Log.i("if", result + " " + poppedBubbles);
             double stdDev = standardDeviation(lifespans, totalReactionTime/lifespans.size());
-
             float[] stD = {(float) stdDev};
+            // TODO: why is this writing to LH_CURL?
             sheet.writeTrials(Sheets.TestType.LH_CURL, today,stD);
-
-            //TODO reinsert after demo
-            //teamSheet.writeData(Sheets.TestType.LH_CURL, today, (float) stdDev);
-
-
         } else {
             result = 0.0;
             Log.i("else", "" + poppedBubbles);
         }
 
+        // score should be altered based on difficulty setting
         double scoreMultiplier;
         switch (DIFFICULTY) {
             case 1: scoreMultiplier = 1;
@@ -331,32 +292,23 @@ public class PopActivity extends Activity implements Sheets.Host {
                 break;
         }
         float scoreMultiplied = (float) (result * scoreMultiplier);
-
-        //RH_POP FINAL RESULTS
         Log.i("result", "" + scoreMultiplied);
-
         float[] res = {scoreMultiplied};
-        sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
-        //TODO reinsert after demo
-        //teamSheet.writeData(Sheets.TestType.RH_POP, today, (float) result);
 
+        sheet.writeTrials(Sheets.TestType.RH_POP, today, res);
 
         if(errored){
             //this means the user closed the program early
             setResult(Activity.RESULT_CANCELED, TrialMode.getResultIntent(scoreMultiplied));
-        }else if (!IN_PRACTICE_MODE) {
+        } else if (!IN_PRACTICE_MODE) {
             //Only write to central sheet if intent is TRIAL
-            //centralSheet.writeData(APPENDAGE, USER_ID, (float) result);
             setResult(Activity.RESULT_OK, TrialMode.getResultIntent(scoreMultiplied));
         }
 
         writtenToSheets = true;
 
-        // score based on DIFFICULTY
-
-
+        // present the singular score to the user
         TextView resultScreen = (TextView) findViewById(R.id.showResult);
-
         resultScreen.setText("You hit " + poppedBubbles + " bubbles.\n"
                         + "Your average tap response time was " + precision.format(result)
                         + " seconds.\n"
@@ -371,14 +323,17 @@ public class PopActivity extends Activity implements Sheets.Host {
         (findViewById(R.id.done_button)).setVisibility(View.VISIBLE);
     }
 
+    /*
+    This method calculates an initial location to place the bubble and an initial size of the bubble
+    based on the difficulty setting
+     */
     public void initialLocation() {
-        //TODO: FIX
         bubble = (Button) findViewById(R.id.bubble);
 
         Log.i("Bubble",bubble.getWidth() + " " + bubble.getHeight());
-        // TODO: width and height should be in DP not PX
-        // can convert px to dp by obtaining displaymetrics and using formula
         ViewGroup.LayoutParams params = bubble.getLayoutParams();
+
+        // alter size of bubble based on difficulty
         switch (DIFFICULTY) {
             case 1:
                 params.width = dpToPx(100);
@@ -398,6 +353,7 @@ public class PopActivity extends Activity implements Sheets.Host {
                 break;
         }
         bubble.setLayoutParams(params);
+
         // get screen dimensions
         RelativeLayout.LayoutParams scene = (RelativeLayout.LayoutParams) bubble.getLayoutParams();
         DisplayMetrics metrics = new DisplayMetrics();
@@ -413,14 +369,14 @@ public class PopActivity extends Activity implements Sheets.Host {
                 + new Random()
                 .nextInt(fullHeight - (5 * bubble.getHeight()));
 
-
+        // ensure the location is legal
         boolean legalBubbleLocation = (x + bubble.getWidth() <= fullWidth-CORRECTION_FACTOR) &&
                 (y + bubble.getHeight() <= fullHeight-CORRECTION_FACTOR) &&
                 (x >= 0) &&
                 (y >= 0);
 
+        // if the location is illegal, produce a new legal location
         while (!legalBubbleLocation) {
-            //Log.i("BubbleAct", "illegalBubbleLocation");
             x = bubble.getWidth()
                     + new Random()
                     .nextInt(fullWidth - (5 * bubble.getWidth()));
@@ -435,12 +391,6 @@ public class PopActivity extends Activity implements Sheets.Host {
                     (y >= 0);
         }
 
-        /*
-        // FOR DEBUG PURPOSES
-        debugNarrator.setText("full: " + fullWidth + " x " + fullHeight + "\n"
-                + "location: " + x + " x " + y);
-        */
-
         scene.leftMargin = x;
         scene.topMargin = y;
 
@@ -454,7 +404,7 @@ public class PopActivity extends Activity implements Sheets.Host {
         // save time of appearance as time of birth
         timeOfBirth =  System.nanoTime();
 
-
+        // popping a bubble should record its lifespan and generate another bubble
         bubble.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -466,13 +416,19 @@ public class PopActivity extends Activity implements Sheets.Host {
         });
     }
 
+    /*
+    This method records the lifespan of the recently popped bubble and adds the lifespan to the
+    list of lifespans being recorded for this trial
+     */
     private void saveLife() {
         double lifespan = ((timeOfDeath - timeOfBirth)/1000000000.0);
         lifespans.add(lifespan);
     }
 
-    // the following four methods for Sheet implementation have been copied directly from the
-    // class example app
+    /*
+    The following four methods for Sheet implementation have been copied directly from the cmsc436
+    Sheets examples
+     */
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         sheet.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -506,9 +462,11 @@ public class PopActivity extends Activity implements Sheets.Host {
             System.out.println(e.getClass());
             throw new RuntimeException(e);
         }
-        //Log.i(getClass().getSimpleName(), "Done");
     }
 
+    /*
+    This method presents instructions for the user
+     */
     public void showInstructions(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(PopActivity.this);
         if (IN_PRACTICE_MODE) {
@@ -529,17 +487,21 @@ public class PopActivity extends Activity implements Sheets.Host {
         textView.setTextSize(40);
     }
 
-    //The user hit the done_button, so we can finish the activity and send data back to Front End
+    /*
+    This method is called when the user has notified of completion and results can be sent to the
+    Front End
+     */
     public void sendResultsToFrontEnd(View view) {
         finish();
     }
 
+    /*
+    This method is used to calculate detailed data to be recorded in spreadsheets
+     */
     private double standardDeviation(ArrayList<Double> arr, double average){
-
         if(arr.size() < 2){
             return 0;
         }
-
         double stdDev = 0;
         for(Double d: arr){
             stdDev += ((d - average)*(d - average)) / (arr.size()-1);
@@ -547,6 +509,9 @@ public class PopActivity extends Activity implements Sheets.Host {
         return Math.sqrt(stdDev);
     }
 
+    /*
+    This method is used to convert DP to PX
+     */
     public int dpToPx(int dp) {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
